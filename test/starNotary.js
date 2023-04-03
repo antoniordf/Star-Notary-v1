@@ -32,9 +32,35 @@ it("can change owners", async () => {
   assert.equal(secondOwner, secondUser);
 });
 
-it("can change the name of the star", async () => {
+it("allows the owner to change the name of the star", async () => {
   let instance = await StarNotary.deployed();
-  await instance.changeName("Antonio");
+  await instance.claimStar({ from: owner });
+  await instance.changeName("Antonio", { from: owner });
   let newName = await instance.starName.call();
   assert.equal(newName, "Antonio");
+});
+
+it("Does not allow a non-owner to change the name of the star", async () => {
+  let instance = await StarNotary.deployed();
+  let nonOwner = accounts[1];
+
+  // Reset the star's name to its original value
+  await instance.changeName("Gita", { from: owner });
+
+  try {
+    await instance.changeName("Antonio", { from: nonOwner });
+  } catch (err) {
+    assert.include(
+      err.message,
+      "Only the owner can call this function",
+      "Expected an error containing 'Only the owner can call this function'"
+    );
+  }
+
+  let starName = await instance.starName.call();
+  assert.notEqual(
+    starName,
+    "Antonio",
+    "Star name should not be changed by non-owner"
+  );
 });

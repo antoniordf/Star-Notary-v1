@@ -8,6 +8,14 @@ contract StarNotary {
 
     event starClaimed(address owner);
 
+    modifier onlyOwner() {
+        require(
+            msg.sender == starOwner,
+            "Only the owner can call this function"
+        );
+        _;
+    }
+
     constructor() {
         starName = "Gita";
     }
@@ -17,7 +25,7 @@ contract StarNotary {
         emit starClaimed(msg.sender);
     }
 
-    function changeName(string memory _name) public {
+    function changeName(string memory _name) public onlyOwner {
         starName = _name;
     }
 }
